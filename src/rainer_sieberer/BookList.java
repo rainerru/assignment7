@@ -5,7 +5,7 @@ import java.util.LinkedList;
 public class BookList
 {
 
-	private LinkedList<Book> listOfBooks;
+	protected LinkedList<Book> listOfBooks;
 
 	public BookList ()
 	{
@@ -22,7 +22,7 @@ public class BookList
 
 	public boolean removeBook ( Book oldBook ) { return this.listOfBooks.remove( oldBook ); }
 
-	public Book getBook ( String title )
+	public Book search ( String title )
 	{
 		for ( Book currentBook: this.listOfBooks )
 		{
