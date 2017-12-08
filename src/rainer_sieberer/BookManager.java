@@ -1,6 +1,7 @@
 package rainer_sieberer;
 
 import java.util.Optional;
+import java.lang.IllegalArgumentException;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -23,17 +24,16 @@ public class BookManager extends Application implements CustomObserver{
 	ObservableList<String> myList = FXCollections.observableArrayList();
 	ListView<String> listView = new ListView<>(myList);
 
+	static final String[] descriptionSmall = { "title", "author", "year", "ISBN" };
+	static final String[] descriptionBig = { "Title", "Author", "Year", "ISBN" };
+
 	public static void main(String[] args) { launch(args); }
 
 	@Override
 	public void start(final Stage stage) throws Exception
 	{
+		Exception e = new IllegalArgumentException();
 		this.model.setObserver(this);
-
-		model.add(new Book("LOTR1","Tolkien",1990,1));
-		model.add(new Book("LOTR2","Tolkien",1991,2));
-		model.add(new Book("LOTR3","Tolkien",1992,3));
-		model.add(new Book("LOTR1","Tolkien",1990,4));
 
 		BorderPane root = new BorderPane();
 		Button cmdAdd = new Button("Add");
@@ -45,7 +45,6 @@ public class BookManager extends Application implements CustomObserver{
 		Button cmdGetInfo = new Button("Get Info");
 		cmdGetInfo.setOnAction(new GetInfoHandler());
 
-
 		ToolBar toolBar = new ToolBar(cmdAdd,cmdRemove,cmdGetInfo);
 		root.setTop(toolBar);
 		root.setCenter(listView);
@@ -54,16 +53,7 @@ public class BookManager extends Application implements CustomObserver{
 		stage.show();
 	}
 
-	//TODO
-	//TODO
-	//TODO ;-)
-
-	//TODO: this class should be an Observer of your model. 
-	//      in case you get a notification that the model has changed, update the list of your listView (i.e., myList)
-
-
-
-	// Handlers for the Button:
+	// Handlers for the buttons:
 
 	private class AddHandler implements EventHandler<ActionEvent>
 	{
@@ -72,43 +62,45 @@ public class BookManager extends Application implements CustomObserver{
 		public void handle(ActionEvent event)
 		{ 
 			String title, author;
-			int year, isbn;
+			Integer year, isbn;
 			TextInputDialog dialog;
- 
-			dialog = new TextInputDialog();
- 
-			dialog.setTitle("Adding new book");
-			dialog.setHeaderText("Enter the title of the book:");
-			dialog.setContentText("Title:");
 
-			title = dialog.showAndWait().orElse(null); 
+			Object[] input = new Object[4];
 
-			dialog = new TextInputDialog();
- 
-			dialog.setTitle("Adding new book");
-			dialog.setHeaderText("Enter the author of the book:");
-			dialog.setContentText("Author:");
+			try
+			{
+				for ( int i = 0; i < 4; i++ )
+				{
+					dialog = new TextInputDialog();
 
-			author = dialog.showAndWait().orElse(null); 
+					dialog.setTitle("Adding new book");
+					dialog.setHeaderText("Enter the " + descriptionSmall[i] +" of the book:");
+					dialog.setContentText(descriptionBig[i] + ": ");
 
-			dialog = new TextInputDialog();
- 
-			dialog.setTitle("Adding new book");
-			dialog.setHeaderText("Enter the year of the book:");
-			dialog.setContentText("Year:");
+					Optional<String> result = dialog.showAndWait();
+					if (result.isPresent() && !result.get().equals("") )
+					{
+							if ( i > 1 )
+								input[i] = Integer.parseInt( result.get() );
+							else input[i] = result.get();
+					} else
+					{
+						throw new IllegalArgumentException();
+					}
+				}
 
-			year = Integer.parseInt( dialog.showAndWait().orElse(null) ); 
+				Book newBook = new Book(
+					(String) input[0], (String) input[1], (Integer) input[2], (Integer) input[3]);
+				model.add(newBook);
+			} catch ( IllegalArgumentException e )
+			{
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setTitle("Error");
+					alert.setHeaderText("Error while adding a book");
+					alert.setContentText("Invalid input for a book or canceled!");
 
-			dialog = new TextInputDialog();
- 
-			dialog.setTitle("Adding new book");
-			dialog.setHeaderText("Enter the ISBN of the book (only numbers):");
-			dialog.setContentText("ISBN:");
-
-			isbn = Integer.parseInt( dialog.showAndWait().orElse(null) ); 
-
-			Book newBook = new Book(title,author,year,isbn);
-			model.add(newBook);
+					alert.showAndWait();
+			}
 		}
 
 	}
@@ -118,8 +110,11 @@ public class BookManager extends Application implements CustomObserver{
 		@Override
 		public void handle(ActionEvent event)
 		{
-			int selectedBook = Integer.parseInt( listView.getSelectionModel().getSelectedItem() );
-			model.remove(selectedBook);
+			if ( !(listView.getSelectionModel().getSelectedItem() == null) )
+			{
+				int selectedBook = Integer.parseInt( listView.getSelectionModel().getSelectedItem() );
+				model.remove(selectedBook);
+			}
 		}
 	}
 
@@ -128,17 +123,20 @@ public class BookManager extends Application implements CustomObserver{
 		@Override
 		public void handle(ActionEvent event)
 		{
-			int selectedTitle = Integer.parseInt( listView.getSelectionModel().getSelectedItem() );
-			Book selectedBook = model.search(selectedTitle);
+			if ( !(listView.getSelectionModel().getSelectedItem() == null) )
+			{
+				int selectedTitle = Integer.parseInt( listView.getSelectionModel().getSelectedItem() );
+				Book selectedBook = model.search(selectedTitle);
 
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Book details");
-			alert.setHeaderText("Title: " + selectedBook.getTitle());
-			alert.setContentText("Author: " + selectedBook.getAuthor()
-				+ "\nYear: " + selectedBook.getYear()
-				+	"\nISBN: " + selectedBook.getISBN());
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Book details");
+				alert.setHeaderText("Title: " + selectedBook.getTitle());
+				alert.setContentText("Author: " + selectedBook.getAuthor()
+					+ "\nYear: " + selectedBook.getYear()
+					+	"\nISBN: " + selectedBook.getISBN());
 
-			alert.showAndWait();
+				alert.showAndWait();
+			}
 		}
 	}
 
@@ -157,53 +155,3 @@ public class BookManager extends Application implements CustomObserver{
 	}
 
 }
-
-//TODO
-			//TODO 1) use a nice title and message for the dialog. 
-			//     2) showAndWait returns an Optional<String> (handle 'Cancel' properly)
-			/*Optional<String> input = dialog.showAndWait(); 
-			input.ifNotPresent(() -> {myList.add("no input");} );
-			if ( input.isPresent() )
-			{
-				String input1 = input.get();
-				myList.add(input1);
-			} else 
-			{
-				myList.add("no input");
-			}*/
-			/*input.ifPresent(value -> {
-				myList.add(value);
-			}).ifNotPresent(() -> {
-				System.out.println("! isPresent");
-			});*/
-			//here we directly add it to the list; 
-			//don't do this for the assignment. TODO: modify your 'real' model (add a new entry).
-
-
-
-
-//TODO
-			//TODO 1) use a nice title and message for the dialog. 
-			//     2) showAndWait returns an Optional<String> (handle 'Cancel' properly)
-//			title = dialog.showAndWait().orElse(null); 
-			//here we directly add it to the list; 
-			//don't do this for the assignment. TODO: modify your 'real' model (add a new entry).
-
-
-
-
-
-/*cmdAdd.setOnAction(new EventHandler<ActionEvent>()
-		{  //Option1: as anonymous class (see below)
-			@Override
-			public void handle(ActionEvent event)
-			{
-				//TODO
-				//TODO 1) use a nice title and message for the dialog. 
-				//     2) showAndWait returns an Optional<String> (handle 'Cancel' properly)
-				String input = new TextInputDialog().showAndWait().orElse(null); 
-				//here we directly add it to the list; 
-				//don't do this for the assignment. TODO: modify your 'real' model (add a new entry).
-				myList.add(input);
-			}
-		});*/
