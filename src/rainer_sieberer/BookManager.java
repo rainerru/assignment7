@@ -8,6 +8,8 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
@@ -17,56 +19,29 @@ import javafx.stage.Stage;
 
 public class BookManager extends Application {
 
-	ObservableList<Object> myList = FXCollections.observableArrayList(); //TODO adapt type to your needs
-	ListView<Object> listView = new ListView<>(myList); //TODO adapt type to your needs
+	ObservableList<Object> myList = FXCollections.observableArrayList();
+	ListView<Object> listView = new ListView<>(myList);
 
 	public static void main(String[] args) { launch(args); }
 
 	@Override
 	public void start(final Stage stage) throws Exception
 	{
-		
-
 		BorderPane root = new BorderPane();
 		Button cmdAdd = new Button("Add");
 		cmdAdd.setOnAction(new AddHandler());
-		/*cmdAdd.setOnAction(new EventHandler<ActionEvent>()
-		{  //Option1: as anonymous class (see below)
-			@Override
-			public void handle(ActionEvent event)
-			{
-				//TODO
-				//TODO 1) use a nice title and message for the dialog. 
-				//     2) showAndWait returns an Optional<String> (handle 'Cancel' properly)
-				String input = new TextInputDialog().showAndWait().orElse(null); 
-				//here we directly add it to the list; 
-				//don't do this for the assignment. TODO: modify your 'real' model (add a new entry).
-				myList.add(input);
-			}
-		});*/
-
+		
 		Button cmdRemove = new Button("Remove");
-		cmdRemove.setOnAction(new EventHandler<ActionEvent>()
-		{  //Option1: as anonymous class (see below)
-			@Override
-			public void handle(ActionEvent event)
-			{
-				//TODO
-				//TODO 1) use a nice title and message for the dialog. 
-				//     2) showAndWait returns an Optional<String> (handle 'Cancel' properly)
-				///String input = new TextInputDialog().showAndWait().orElse(null); 
-				Object selectedBook = listView.getSelectionModel().getSelectedItem();
-				myList.remove(selectedBook);
-				//here we directly add it to the list; 
-				//don't do this for the assignment. TODO: modify your 'real' model (add a new entry).
-				///myList.add(input);
-			}
-		});
+		cmdRemove.setOnAction(new RemoveHandler());
 
-		ToolBar toolBar = new ToolBar(cmdAdd,cmdRemove);
+		Button cmdGetInfo = new Button("Get Info");
+		cmdGetInfo.setOnAction(new GetInfoHandler());
+
+
+		ToolBar toolBar = new ToolBar(cmdAdd,cmdRemove,cmdGetInfo);
 		root.setTop(toolBar);
 		root.setCenter(listView);
-		Scene scene = new Scene(root, 200, 200);
+		Scene scene = new Scene(root, 600, 800);
 		stage.setScene(scene);
 		stage.show();
 	}
@@ -82,22 +57,68 @@ public class BookManager extends Application {
 
 	//Handlers for the Button: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-	// Option 2: as extra class
-
-	//cmdAdd.setOnAction(new AddHandler());
-
-	private class AddHandler implements EventHandler<ActionEvent> {
+	private class AddHandler implements EventHandler<ActionEvent>
+	{
 
 		@Override
 		public void handle(ActionEvent event)
 		{ 
+			String title, author, year, isbn;
 			TextInputDialog dialog = new TextInputDialog();
  
 			dialog.setTitle("Adding new book");
 			dialog.setHeaderText("Enter your name:");
 			dialog.setContentText("Name:");
 
-			//TODO
+			
+
+
+			dialog = new TextInputDialog();
+ 
+			dialog.setTitle("Adding new book");
+			dialog.setHeaderText("Enter the title of the book:");
+			dialog.setContentText("Title:");
+
+			title = dialog.showAndWait().orElse(null); 
+
+			Book newBook = new Book(title,"2",1995,11456);
+			myList.add(newBook);
+		}
+
+	}
+
+	private class RemoveHandler implements EventHandler<ActionEvent>
+	{
+		@Override
+		public void handle(ActionEvent event)
+		{
+			Object selectedBook = listView.getSelectionModel().getSelectedItem();
+			myList.remove(selectedBook);
+		}
+	}
+
+	private class GetInfoHandler implements EventHandler<ActionEvent>
+	{
+		@Override
+		public void handle(ActionEvent event)
+		{
+			Object selectedBook = listView.getSelectionModel().getSelectedItem();
+
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Information Dialog");
+			alert.setHeaderText("Look, an Information Dialog");
+			alert.setContentText("I have a great message for you!");
+
+			myList.remove(selectedBook);
+
+			alert.showAndWait();
+		}
+	}
+	
+
+}
+
+//TODO
 			//TODO 1) use a nice title and message for the dialog. 
 			//     2) showAndWait returns an Optional<String> (handle 'Cancel' properly)
 			/*Optional<String> input = dialog.showAndWait(); 
@@ -119,28 +140,30 @@ public class BookManager extends Application {
 			//don't do this for the assignment. TODO: modify your 'real' model (add a new entry).
 
 
-			dialog = new TextInputDialog();
- 
-			dialog.setTitle("Adding new book");
-			dialog.setHeaderText("Enter your name2222:");
-			dialog.setContentText("Name:");
 
-			//TODO
+
+//TODO
 			//TODO 1) use a nice title and message for the dialog. 
 			//     2) showAndWait returns an Optional<String> (handle 'Cancel' properly)
-			String input2 = dialog.showAndWait().orElse(null); 
+//			title = dialog.showAndWait().orElse(null); 
 			//here we directly add it to the list; 
 			//don't do this for the assignment. TODO: modify your 'real' model (add a new entry).
-			myList.add(input2);
-		}
 
-	}
-	
 
-	/* Option 3: lambda
 
-	cmdAdd.setOnAction(e -> {
-	//System.out.println("bla");
-	});
-	*/
-}
+
+
+/*cmdAdd.setOnAction(new EventHandler<ActionEvent>()
+		{  //Option1: as anonymous class (see below)
+			@Override
+			public void handle(ActionEvent event)
+			{
+				//TODO
+				//TODO 1) use a nice title and message for the dialog. 
+				//     2) showAndWait returns an Optional<String> (handle 'Cancel' properly)
+				String input = new TextInputDialog().showAndWait().orElse(null); 
+				//here we directly add it to the list; 
+				//don't do this for the assignment. TODO: modify your 'real' model (add a new entry).
+				myList.add(input);
+			}
+		});*/

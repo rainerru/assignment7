@@ -12,7 +12,7 @@ public class BookList
 		this.listOfBooks = new LinkedList<Book>();
 	}
 
-	public boolean addBook ( Book newBook )
+	public boolean add ( Book newBook )
 	{
 		if ( this.listOfBooks.indexOf(newBook) == -1 ) // -1 means, it's not present in the list
 			return this.listOfBooks.add( newBook );
@@ -20,9 +20,9 @@ public class BookList
 			return false;
 	}
 
-	public boolean removeBook ( Book oldBook ) { return this.listOfBooks.remove( oldBook ); }
+	public boolean remove ( Book oldBook ) { return this.listOfBooks.remove( oldBook ); }
 
-	public Book search ( String title )
+	public Book search ( String title ) // this allows editing the books
 	{
 		for ( Book currentBook: this.listOfBooks )
 		{
